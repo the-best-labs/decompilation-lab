@@ -28,6 +28,10 @@ implements ActionListener {
         this.animation.start();
     }
 
+    /**
+     * Timer callback that triggers repainting when the previous frame is complete.
+     * @param arg0 The action event (not used).
+     */
     @Override
     public void actionPerformed(ActionEvent arg0) {
         if (this.is_done) {
@@ -35,6 +39,10 @@ implements ActionListener {
         }
     }
 
+    /**
+     * Draws animated rotating shapes in a grid pattern with increasing rotation angles.
+     * @param g The graphics context to draw on.
+     */
     private void doDrawing(Graphics g) {
         this.is_done = false;
         this.g2d = (Graphics2D)g;

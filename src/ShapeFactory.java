@@ -19,6 +19,11 @@ public class ShapeFactory {
     public int width = 25;
     public int height = 25;
 
+    /**
+     * Creates a shape with specified stroke style. Shape type is encoded as a two-digit number
+     * where the tens digit selects the shape and the units digit selects the stroke/paint style.
+     * @param shape_type Encoded shape type (e.g., 94 = circle with cut sector, 7px stroke).
+     */
     public ShapeFactory(int shape_type) {
         switch (shape_type / 10) {
             case 1: {
@@ -77,6 +82,14 @@ public class ShapeFactory {
         }
     }
 
+    /**
+     * Creates a star shape with specified number of arms and radii.
+     * @param arms Number of star arms (e.g., 3, 5).
+     * @param center Center point of the star.
+     * @param rOuter Outer radius (points of the star).
+     * @param rInner Inner radius (valleys of the star).
+     * @return A GeneralPath representing the star shape.
+     */
     private static Shape createStar(int arms, Point center, double rOuter, double rInner) {
         double angle = Math.PI / (double)arms;
         GeneralPath path = new GeneralPath();
