@@ -15,30 +15,50 @@ import java.awt.geom.Rectangle2D;
 public class ShapeFactory {
     public Shape shape;
     public BasicStroke stroke = new BasicStroke(3.0f);
-    public Paint paint;
+    public Paint paint = Color.black;
     public int width = 25;
     public int height = 25;
 
     /**
-     * Creates a shape with specified stroke style. Shape type is encoded as a two-digit number
-     * where the tens digit selects the shape and the units digit selects the stroke/paint style.
+     * Creates a shape with specified type and style using type-safe enums.
+     * @param shapeType The shape type (eliminates magic numbers).
+     * @param strokeStyle The stroke/paint style (eliminates magic numbers).
+     */
+    public ShapeFactory(ShapeType shapeType, StrokeStyle strokeStyle) {
+        createShape(shapeType);
+        applyStyle(strokeStyle);
+    }
+
+    /**
+     * Legacy constructor for backward compatibility. Decodes two-digit shape_type
+     * where tens digit is shape and units digit is stroke/paint style.
      * @param shape_type Encoded shape type (e.g., 94 = circle with cut sector, 7px stroke).
      */
     public ShapeFactory(int shape_type) {
-        switch (shape_type / 10) {
-            case 1: {
+        ShapeType shapeType = ShapeType.fromCode(shape_type / 10);
+        StrokeStyle strokeStyle = StrokeStyle.fromCode(shape_type % 10);
+        createShape(shapeType);
+        applyStyle(strokeStyle);
+    }
+
+    /**
+     * Creates the shape based on ShapeType enum.
+     */
+    private void createShape(ShapeType shapeType) {
+        switch (shapeType) {
+            case STAR_3_ARM: {
                 this.shape = ShapeFactory.createStar(3, new Point(0, 0), (double)this.width / 2.0, (double)this.width / 2.0);
                 break;
             }
-            case 3: {
+            case STAR_5_ARM: {
                 this.shape = ShapeFactory.createStar(5, new Point(0, 0), (double)this.width / 2.0, (double)this.width / 4.0);
                 break;
             }
-            case 5: {
+            case RECTANGLE: {
                 this.shape = new Rectangle2D.Double((double)(-this.width) / 2.0, (double)(-this.height) / 2.0, this.width, this.height);
                 break;
             }
-            case 7: {
+            case TRIANGLE: {
                 GeneralPath path = new GeneralPath();
                 double tmp_height = Math.sqrt(2.0) / 2.0 * (double)this.height;
                 path.moveTo((double)(-this.width / 2), -tmp_height);
@@ -48,37 +68,25 @@ public class ShapeFactory {
                 this.shape = path;
                 break;
             }
-            case 9: {
+            case CIRCLE_SECTOR: {
                 this.shape = new Arc2D.Double((double)(-this.width) / 2.0, (double)(-this.height) / 2.0, this.width, this.height, 30.0, 300.0, 2);
                 break;
             }
-            default: {
-                throw new Error("type is nusupported");
-            }
         }
-        switch (shape_type % 10) {
-            case 1: {
-                this.stroke = new BasicStroke(3.0f);
-                break;
-            }
-            case 3: {
-                break;
-            }
-            case 4: {
-                this.stroke = new BasicStroke(7.0f);
-                break;
-            }
-            case 7: {
-                this.paint = new GradientPaint(-this.width, -this.height, Color.white, this.width, this.height, Color.gray, true);
-                break;
-            }
-            case 8: {
-                this.paint = Color.red;
-                break;
-            }
-            default: {
-                throw new Error("type is nusupported");
-            }
+    }
+
+    /**
+     * Applies stroke and paint style based on StrokeStyle enum.
+     */
+    private void applyStyle(StrokeStyle strokeStyle) {
+        this.stroke = strokeStyle.getDefaultStroke();
+
+        // Special handling for gradient paint (needs width/height context)
+        if (strokeStyle == StrokeStyle.GRADIENT) {
+            this.paint = new GradientPaint(-this.width, -this.height, Color.white, this.width, this.height, Color.gray, true);
+        } else {
+            Paint defaultPaint = strokeStyle.getDefaultPaint();
+            this.paint = (defaultPaint != null) ? defaultPaint : Color.black;
         }
     }
 
